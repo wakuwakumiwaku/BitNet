@@ -14,7 +14,7 @@ def run_command(command, shell=False):
         sys.exit(1)
 
 def run_inference():
-    build_dir = "build"
+    build_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "build")
     if platform.system() == "Windows":
         main_path = os.path.join(build_dir, "bin", "Release", "llama-cli.exe")
         if not os.path.exists(main_path):

@@ -14,7 +14,7 @@ def run_command(command, shell=False):
         sys.exit(1)
 
 def run_server():
-    build_dir = "build"
+    build_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "build")
     if platform.system() == "Windows":
         server_path = os.path.join(build_dir, "bin", "Release", "llama-server.exe")
         if not os.path.exists(server_path):

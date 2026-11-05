@@ -246,6 +246,17 @@ optional arguments:
                         (When this option is turned on, the prompt specified by -p will be used as the system prompt.)
 </pre>
 
+### Calling inference launchers from another directory
+
+`run_inference.py` and `run_inference_server.py` locate their executables in the
+`build` directory beside the scripts, independently of the caller's working
+directory. Model paths supplied with `-m` are still interpreted relative to the
+caller's working directory; use an absolute model path when needed.
+
+Run the headless launcher tests with `python -B -m unittest discover -s tests -v`.
+They cover POSIX and Windows command construction; the POSIX CLI smoke tests use
+short-lived synthetic executables, without loading a model or starting a server.
+
 ### Benchmark
 We provide scripts to run the inference benchmark providing a model.
 
