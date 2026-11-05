@@ -294,6 +294,23 @@ python utils/generate-dummy-bitnet-model.py models/bitnet_b1_58-large --outfile 
 python utils/e2e_benchmark.py -m models/dummy-bitnet-125m.tl1.gguf -p 512 -n 128
 ```
 
+
+#### Benchmark exit status and wrapper tests
+
+`utils/e2e_benchmark.py` exits successfully when `llama-bench` succeeds and
+returns a nonzero status when the benchmark fails. Automation can use that
+status to distinguish a completed run from an error.
+
+Run the CPU-only wrapper regression suite without model files or a compiled
+llama.cpp checkout:
+
+```sh
+python -B -m unittest discover -s tests -v
+```
+
+The tests mock the benchmark process boundary; they do not measure inference
+performance or validate model output.
+
 ### Convert from `.safetensors` Checkpoints
 
 ```sh
