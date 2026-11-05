@@ -10,6 +10,7 @@ import os
 import argparse
 import re
 import csv
+import tempfile
 from pathlib import Path
 from datetime import datetime
 
@@ -84,38 +85,38 @@ class EmbeddingQuantizer:
         start_time = datetime.now()
         
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                cwd=os.getcwd(),
-                timeout=600  # 10 minute timeout
-            )
-            
-            end_time = datetime.now()
-            duration = (end_time - start_time).total_seconds()
-            
-            if result.returncode == 0:
-                # Get output file size
-                file_size_mb = output_file.stat().st_size / (1024 * 1024)
-                
-                print(f"✅ Success! Duration: {duration:.2f}s, Size: {file_size_mb:.2f} MB")
-                
-                # Record newly created file
-                if not file_already_existed:
+            # The quantizer may leave a partial file when it fails or times out.
+            # Only publish a completed model; an abandoned final name would be
+            # treated as a successful existing model on the next invocation.
+            with tempfile.TemporaryDirectory(prefix=".quantize-", dir=self.output_dir) as staging:
+                staged_output = Path(staging) / output_file.name
+                cmd[4] = str(staged_output)
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    cwd=os.getcwd(),
+                    timeout=600  # 10 minute timeout
+                )
+
+                end_time = datetime.now()
+                duration = (end_time - start_time).total_seconds()
+
+                if result.returncode == 0:
+                    file_size_mb = staged_output.stat().st_size / (1024 * 1024)
+                    staged_output.replace(output_file)
                     self.newly_created_files.add(output_file)
-                
-                # Print part of output
-                if result.stdout:
-                    print("\n📊 Quantization output:")
-                    print(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
-                
-                return True
-            else:
-                print(f"❌ Failed with return code {result.returncode}")
-                print(f"Error: {result.stderr}")
-                return False
-                
+                    print(f"✅ Success! Duration: {duration:.2f}s, Size: {file_size_mb:.2f} MB")
+
+                    if result.stdout:
+                        print("\n📊 Quantization output:")
+                        print(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
+                    return True
+                else:
+                    print(f"❌ Failed with return code {result.returncode}")
+                    print(f"Error: {result.stderr}")
+                    return False
+
         except subprocess.TimeoutExpired:
             print(f"❌ Timeout (exceeded 10 minutes)")
             return False
