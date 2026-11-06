@@ -332,6 +332,10 @@ huggingface-cli download microsoft/bitnet-b1.58-2B-4T-bf16 --local-dir ./models/
 python ./utils/convert-helper-bitnet.py ./models/bitnet-b1.58-2B-4T-bf16
 ```
 
+The helper exits nonzero if preprocessing, conversion or quantization fails,
+while still running its checkpoint cleanup and restoration step. A successful
+conversion exits zero.
+
 ### FAQ (Frequently Asked Questions)📌 
 
 #### Q1: The build dies with errors building llama.cpp due to issues with std::chrono in log.cpp?

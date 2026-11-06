@@ -100,6 +100,7 @@ def main():
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        raise SystemExit(1) from None
     finally:
         print("Cleaning up intermediate files...")
         if preprocessed_output_file.exists() and preprocessed_output_file != input_backup_file:
